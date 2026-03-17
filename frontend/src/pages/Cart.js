@@ -13,20 +13,21 @@ const resolveImageSrc = (image) => {
   }
   
   const base = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  let fullUrl = '';
 
   // If it's a local path starting with products/ or uploads/
   if (trimmed.startsWith('products/') || trimmed.startsWith('uploads/')) {
-    return `${base}/${trimmed}`;
-  }
-  
-  if (trimmed.startsWith('images/')) {
+    fullUrl = `${base}/${trimmed}`;
+  } else if (trimmed.startsWith('images/')) {
     const publicBase = process.env.PUBLIC_URL || '';
-    return `${publicBase}/${trimmed}`;
+    fullUrl = `${publicBase}/${trimmed}`;
+  } else {
+    // Default to products folder
+    fullUrl = `${base}/products/${trimmed}`;
   }
 
-  // Try to guess if it's in products or uploads if no prefix
-  // For this project, most images are in products/
-  return `${base}/products/${trimmed}`;
+  // Handle spaces in filenames
+  return encodeURI(fullUrl);
 };
 
 const Cart = () => {
