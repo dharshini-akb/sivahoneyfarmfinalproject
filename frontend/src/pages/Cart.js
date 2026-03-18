@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
@@ -53,9 +53,20 @@ const Cart = () => {
     fetchFeaturedHoney();
   }, []);
 
+  const calculateTotal = useCallback(() => {
+    let sum = 0;
+    cart.items.forEach(item => {
+      const product = products[item.productId];
+      if (product) {
+        sum += product.price * item.quantity;
+      }
+    });
+    setTotal(sum);
+  }, [cart.items, products]);
+
   useEffect(() => {
     calculateTotal();
-  }, [cart, products]);
+  }, [calculateTotal]);
 
   const fetchCart = async () => {
     try {
@@ -128,17 +139,6 @@ const Cart = () => {
     }
   };
 
-  const calculateTotal = () => {
-    let sum = 0;
-    cart.items.forEach(item => {
-      const product = products[item.productId];
-      if (product) {
-        sum += product.price * item.quantity;
-      }
-    });
-    setTotal(sum);
-  };
-
   const updateQuantity = async (productId, newQuantity) => {
     if (newQuantity <= 0) {
       await removeItem(productId);
@@ -185,7 +185,7 @@ const Cart = () => {
           <Link to="/about">About</Link>
           <Link to="/contact">Contact</Link>
           {user && (
-            <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }}>Logout</a>
+            <button type="button" onClick={handleLogout}>Logout</button>
           )}
         </div>
       </nav>

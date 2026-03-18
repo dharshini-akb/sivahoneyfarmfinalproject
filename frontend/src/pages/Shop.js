@@ -42,9 +42,6 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [likes, setLikes] = useState({});
-  const [reviews, setReviews] = useState({});
-  const [expandedReviews, setExpandedReviews] = useState({});
-  const [reviewDrafts, setReviewDrafts] = useState({});
   const { user, logout } = useContext(AuthContext);
   const handleLogout = () => {
     logout();
@@ -84,9 +81,7 @@ const Shop = () => {
 
   useEffect(() => {
     const storedLikes = JSON.parse(localStorage.getItem('product_likes') || '{}');
-    const storedReviews = JSON.parse(localStorage.getItem('product_reviews') || '{}');
     setLikes(storedLikes);
-    setReviews(storedReviews);
   }, []);
 
   
@@ -102,32 +97,6 @@ const Shop = () => {
       localStorage.setItem('product_likes', JSON.stringify(updated));
       return updated;
     });
-  };
-
-  const submitReview = (productId) => {
-    const draft = reviewDrafts[productId] || { name: '', comment: '', rating: 0 };
-    if (!draft.name || !draft.comment || !draft.rating) return;
-    const newReview = {
-      name: draft.name,
-      comment: draft.comment,
-      rating: draft.rating,
-      ts: Date.now()
-    };
-    setReviews(prev => {
-      const list = prev[productId] || [];
-      const updated = { ...prev, [productId]: [newReview, ...list] };
-      localStorage.setItem('product_reviews', JSON.stringify(updated));
-      return updated;
-    });
-    setReviewDrafts(prev => ({ ...prev, [productId]: { name: '', comment: '', rating: 0 } }));
-  };
-
-  const setDraftField = (productId, field, value) => {
-    setReviewDrafts(prev => ({ ...prev, [productId]: { ...(prev[productId] || { name: '', comment: '', rating: 0 }), [field]: value } }));
-  };
-
-  const toggleReviewsOpen = (productId) => {
-    setExpandedReviews(prev => ({ ...prev, [productId]: !prev[productId] }));
   };
 
   const categories = [
@@ -196,10 +165,6 @@ const Shop = () => {
           <div className="products-grid">
             {products.map(product => {
               const likeState = likes[product._id] || { count: 0, liked: false };
-              const reviewList = reviews[product._id] || [];
-              const draft = reviewDrafts[product._id] || { name: '', comment: '', rating: 0 };
-              const open = !!expandedReviews[product._id];
-              const isFs = product._id && String(product._id).startsWith('fs_');
               const CardInner = (
                 <>
                   <div className="product-image">

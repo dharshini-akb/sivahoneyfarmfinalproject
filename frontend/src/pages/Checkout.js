@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { Elements, useStripe, useElements } from '@stripe/react-stripe-js';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 import './Checkout.css';
@@ -39,7 +39,6 @@ const StripeCheckoutWrapper = (props) => {
 };
 
 const CheckoutFormContent = ({ cart, products, total, onOrderComplete, hasStripe, stripe, elements, discountInfo }) => {
-  const [paymentMethod, setPaymentMethod] = useState('cod');
   const [shippingInfo, setShippingInfo] = useState({
     name: '',
     address: '',
@@ -140,7 +139,6 @@ const CheckoutFormContent = ({ cart, products, total, onOrderComplete, hasStripe
 
     try {
       let paymentId = 'COD-' + Date.now();
-      let orderId = null;
 
       // Create order
       const orderData = {
@@ -155,7 +153,6 @@ const CheckoutFormContent = ({ cart, products, total, onOrderComplete, hasStripe
       };
 
       const orderRes = await axios.post('/api/orders', orderData);
-      orderId = orderRes.data._id;
 
       // Clear cart
       await axios.delete('/api/cart');
@@ -304,16 +301,7 @@ const Checkout = () => {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState(null);
 
-  useEffect(() => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    fetchCart();
-    checkDiscounts();
-  }, []);
-
-  const checkDiscounts = async () => {
+  const checkDiscounts = useCallback(async () => {
     try {
       const res = await axios.get('/api/orders');
       const isFirstUser = res.data.length === 0;
@@ -353,14 +341,20 @@ const Checkout = () => {
     } catch (error) {
       console.error('Error checking discounts:', error);
     }
-  };
+  }, [cart.items, products]);
 
-  useEffect(() => {
-    calculateTotal();
-    checkDiscounts();
-  }, [cart, products]);
+  const calculateTotal = useCallback(() => {
+    let sum = 0;
+    cart.items.forEach(item => {
+      const product = products[item.productId];
+      if (product) {
+        sum += product.price * item.quantity;
+      }
+    });
+    setTotal(sum);
+  }, [cart.items, products]);
 
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     try {
       const res = await axios.get('/api/cart');
       setCart(res.data);
@@ -375,25 +369,27 @@ const Checkout = () => {
       const productResponses = await Promise.all(productPromises);
 
       const productsMap = {};
-      productResponses.forEach((res, index) => {
-        productsMap[productIds[index]] = res.data;
+      productResponses.forEach((r, index) => {
+        productsMap[productIds[index]] = r.data;
       });
       setProducts(productsMap);
     } catch (error) {
       console.error('Error fetching cart:', error);
     }
-  };
+  }, [navigate]);
 
-  const calculateTotal = () => {
-    let sum = 0;
-    cart.items.forEach(item => {
-      const product = products[item.productId];
-      if (product) {
-        sum += product.price * item.quantity;
-      }
-    });
-    setTotal(sum);
-  };
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    fetchCart();
+  }, [fetchCart, navigate, user]);
+
+  useEffect(() => {
+    calculateTotal();
+    checkDiscounts();
+  }, [calculateTotal, checkDiscounts]);
 
   const handleOrderComplete = (order) => {
     setOrderComplete(true);

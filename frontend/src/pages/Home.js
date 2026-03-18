@@ -3,31 +3,6 @@ import { Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import './Home.css';
 
-// Reusable card for product/category highlights
-const ProductCard = ({ title, price, img, badge }) => {
-  return (
-    <div className="product-card">
-      <div className="product-card-media">
-        <img
-          src={img}
-          alt={title}
-          loading="lazy"
-          onError={(e) => {
-            e.currentTarget.src =
-              'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600"><rect width="100%" height="100%" fill="%23FFF8E1"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%238B4513" font-size="20" font-family="Arial">Image unavailable</text></svg>';
-          }}
-        />
-        {badge && <span className="product-card-badge">{badge}</span>}
-      </div>
-      <div className="product-card-body">
-        <h4 className="product-card-title">{title}</h4>
-        <p className="product-card-price">From ₹{price}</p>
-        <Link to="/shop" className="product-card-btn">Shop Now</Link>
-      </div>
-    </div>
-  );
-};
-
 // Hero section with CTAs
 const HeroSection = () => {
   const { user } = useContext(AuthContext);
