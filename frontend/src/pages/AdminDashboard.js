@@ -90,7 +90,7 @@ const AdminDashboard = () => {
 
   const updateOrderInfo = async (orderId, updates) => {
     try {
-      const res = await axios.put(`/api/admin/orders/${orderId}/status`, updates);
+      await axios.put(`/api/admin/orders/${orderId}/status`, updates);
       
       // Update the order in the state
       setRecentOrders(recentOrders.map(order => 
@@ -252,7 +252,7 @@ const AdminDashboard = () => {
           <a href="/orders">My Orders</a>
           <a href="/about">About</a>
           <a href="/contact">Contact</a>
-          <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }}>Logout</a>
+          <button type="button" onClick={handleLogout}>Logout</button>
         </div>
       </nav>
       <div className="admin-dashboard-background">

@@ -35,20 +35,20 @@ const SalesAnalytics = () => {
   const [period, setPeriod] = useState('30');
 
   useEffect(() => {
+    const fetchSalesData = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`/api/admin/sales-analytics?year=${year}&period=${period}`);
+        setData(res.data);
+      } catch (error) {
+        console.error('Error fetching sales analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchSalesData();
   }, [year, period]);
-
-  const fetchSalesData = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`/api/admin/sales-analytics?year=${year}&period=${period}`);
-      setData(res.data);
-    } catch (error) {
-      console.error('Error fetching sales analytics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading || !data) {
     return <div className="analytics-loading">Preparing your insights...</div>;

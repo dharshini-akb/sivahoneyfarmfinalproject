@@ -36,20 +36,20 @@ const AdminAnalytics = () => {
   const [days, setDays] = useState('30');
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get(`/api/admin/analytics?days=${days}`);
+        setData(res.data);
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchData();
   }, [days]);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`/api/admin/analytics?days=${days}`);
-      setData(res.data);
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading || !data) {
     return (
