@@ -154,18 +154,38 @@ const sendOrderEmail = async (order) => {
     try {
       const fromAddress = process.env.RESEND_FROM || process.env.EMAIL_USER;
       if (hasResend) {
+        // Send to primary admin
         await sendViaResend({
           from: `Siva Honey Form <${fromAddress}>`,
           to: adminEmail,
           subject: mailOptions.subject,
           html: mailOptions.html
         });
+
+        // Also send to secondary admin if provided in .env
+        if (process.env.SECONDARY_ADMIN_EMAIL && process.env.SECONDARY_ADMIN_EMAIL !== adminEmail) {
+          await sendViaResend({
+            from: `Siva Honey Form <${fromAddress}>`,
+            to: process.env.SECONDARY_ADMIN_EMAIL,
+            subject: mailOptions.subject,
+            html: mailOptions.html
+          });
+        }
       } else if (transporter) {
+        // Send to primary admin
         await transporter.sendMail(mailOptions);
+
+        // Also send to secondary admin if provided in .env
+        if (process.env.SECONDARY_ADMIN_EMAIL && process.env.SECONDARY_ADMIN_EMAIL !== adminEmail) {
+          await transporter.sendMail({
+            ...mailOptions,
+            to: process.env.SECONDARY_ADMIN_EMAIL
+          });
+        }
       } else {
         throw new Error('No email provider configured');
       }
-      console.log('Order notification email sent to admin successfully');
+      console.log('Order notification email sent to admin(s) successfully');
     } catch (adminError) {
       console.error('Failed to send admin notification:', adminError.message);
     }
