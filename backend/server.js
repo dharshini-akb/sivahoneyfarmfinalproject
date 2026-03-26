@@ -42,6 +42,11 @@ app.use('/api/payment', require('./routes/payment'));
 app.use('/api/discussions', require('./routes/discussions'));
 app.use('/api/contact', require('./routes/contact'));
 
+// Basic health check route
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok', message: 'Siva Honey Form Backend is running' });
+});
+
 // MongoDB Connection
 const connectDB = async () => {
   try {
@@ -58,6 +63,6 @@ connectDB();
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
