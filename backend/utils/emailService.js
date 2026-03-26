@@ -89,7 +89,7 @@ const sendOrderEmail = async (order) => {
     ).join('\n');
 
     const mailOptions = {
-      from: `"Siva Honey Form" <${process.env.EMAIL_USER}>`,
+      from: process.env.EMAIL_USER,
       to: adminEmail,
       subject: `New Order Received - Order #${order._id.toString().slice(-6)}`,
       html: `
@@ -205,7 +205,7 @@ const sendOrderEmail = async (order) => {
 const sendUserOrderConfirmation = async (order) => {
   try {
     const mailOptions = {
-      from: `"Siva Honey Form" <${process.env.EMAIL_USER}>`,
+      from: process.env.EMAIL_USER,
       to: order.user.email,
       subject: `Order Confirmation - Order #${order._id.toString().slice(-6).toUpperCase()}`,
       html: `
