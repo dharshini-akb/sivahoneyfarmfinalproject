@@ -10,7 +10,9 @@ console.log('- EMAIL_PASS:', process.env.EMAIL_PASS ? 'Found' : 'MISSING');
 console.log('- ADMIN_EMAIL:', process.env.ADMIN_EMAIL ? 'Found' : 'MISSING');
 console.log('- RESEND_API_KEY:', process.env.RESEND_API_KEY ? 'Found' : 'MISSING');
 
-const hasResend = !!process.env.RESEND_API_KEY;
+// Prefer Gmail over Resend if both are provided but Resend is in trial/unverified mode.
+// Set PREFER_GMAIL=true in your environment variables to use Gmail instead of Resend.
+const useResend = !!process.env.RESEND_API_KEY && process.env.PREFER_GMAIL !== 'true';
 
 const sendViaResend = async ({ from, to, subject, html }) => {
   const payload = {
@@ -43,7 +45,7 @@ const sendViaResend = async ({ from, to, subject, html }) => {
 };
 
 // Create transporter with explicit configuration for better reliability on cloud hosts like Render
-const transporter = (!hasResend && process.env.EMAIL_USER && process.env.EMAIL_PASS)
+const transporter = (process.env.EMAIL_USER && process.env.EMAIL_PASS)
   ? nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
@@ -153,7 +155,7 @@ const sendOrderEmail = async (order) => {
 
     try {
       const fromAddress = process.env.RESEND_FROM || process.env.EMAIL_USER;
-      if (hasResend) {
+      if (useResend) {
         // Send to primary admin
         await sendViaResend({
           from: `Siva Honey Form <${fromAddress}>`,
@@ -265,7 +267,7 @@ const sendUserOrderConfirmation = async (order) => {
     };
 
     const fromAddress = process.env.RESEND_FROM || process.env.EMAIL_USER;
-    if (hasResend) {
+    if (useResend) {
       await sendViaResend({
         from: `Siva Honey Form <${fromAddress}>`,
         to: order.user.email,
