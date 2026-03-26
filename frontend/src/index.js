@@ -4,10 +4,14 @@ import './index.css';
 import App from './App';
 import axios from 'axios';
 
-// Only set baseURL for local development if needed. 
-// In production, we use Vercel rewrites (proxy) to avoid CSP errors.
-const apiBaseUrl = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:5000';
-axios.defaults.baseURL = apiBaseUrl;
+// Use Vercel rewrites (proxy) in production to avoid CSP errors and direct cross-origin calls.
+// In development, we fallback to localhost.
+if (process.env.NODE_ENV === 'development') {
+  axios.defaults.baseURL = 'http://localhost:5000';
+} else {
+  // In production, baseURL should be empty to use relative paths (proxied by vercel.json)
+  axios.defaults.baseURL = '';
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

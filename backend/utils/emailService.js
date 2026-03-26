@@ -42,17 +42,22 @@ const sendViaResend = async ({ from, to, subject, html }) => {
   return res.json();
 };
 
-// Create transporter with Gmail service configuration (Recommended for Gmail)
+// Create transporter with explicit configuration for better reliability on cloud hosts like Render
 const transporter = (!hasResend && process.env.EMAIL_USER && process.env.EMAIL_PASS)
   ? nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Use SSL
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
     },
     tls: {
-      rejectUnauthorized: false // Necessary for some local environments
-    }
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000
   })
   : null;
 
